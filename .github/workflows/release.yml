@@ -39,7 +39,7 @@ jobs:
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: rsreader-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.go-version }}
+          name: rsreader-${GOOS}-${GOARCH}-${{ matrix.go-version }}
           path: rsreader-${GOOS}-${GOARCH}-${{ matrix.go-version }}
 
   release:

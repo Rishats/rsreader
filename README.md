@@ -14,7 +14,7 @@ This project provides a real-time monitoring system for ground motion using data
 
 ## Prerequisites
 
-- Go (Golang)
+- Go (Golang) version 1.22 or higher
 - Raspberry Shake sensor
 - Internet connection
 
@@ -23,8 +23,8 @@ This project provides a real-time monitoring system for ground motion using data
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/yourusername/ground-motion-monitoring.git
-cd ground-motion-monitoring
+git clone https://github.com/Rishats/rsreader.git
+cd rsreader
 ```
 
 2. Install the required Go packages:

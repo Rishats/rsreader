@@ -27,19 +27,25 @@ jobs:
         with:
           go-version: ${{ matrix.go-version }}
 
+      - name: Set GOOS and GOARCH
+        run: |
+          if [ "${{ matrix.os }}" == "windows-latest" ]; then
+            echo "GOOS=windows" >> $GITHUB_ENV
+          elif [ "${{ matrix.os }}" == "macos-latest" ]; then
+            echo "GOOS=darwin" >> $GITHUB_ENV
+          else
+            echo "GOOS=linux" >> $GITHUB_ENV
+          fi
+          echo "GOARCH=${{ matrix.arch }}" >> $GITHUB_ENV
+
       - name: Build
-        env:
-          GOOS: ${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'darwin' || 'linux' }}
-          GOARCH: ${{ matrix.arch }}
         run: |
           echo "Building for GOOS=${GOOS} GOARCH=${GOARCH}"
           go build -v -o rsreader-${GOOS}-${GOARCH}
           ls -la
+          pwd
 
       - name: Archive build artifacts
-        env:
-          GOOS: ${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'darwin' || 'linux' }}
-          GOARCH: ${{ matrix.arch }}
         uses: actions/upload-artifact@v3
         with:
           name: rsreader-${GOOS}-${GOARCH}

@@ -13,6 +13,7 @@ jobs:
       matrix:
         go-version: [1.22]  # Define the Go versions you want to test against
         os: [ubuntu-latest, windows-latest, macos-latest]  # Define the OS you want to build for
+        arch: [amd64, arm, arm64]  # Define the architectures you want to build for
 
     steps:
       - name: Checkout code
@@ -25,13 +26,15 @@ jobs:
 
       - name: Build
         run: |
-          go build -v -o myapp
+          GOOS=${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'darwin' || 'linux' }}
+          GOARCH=${{ matrix.arch }}
+          go build -v -o rsreader-${GOOS}-${GOARCH}-${{ matrix.go-version }}
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: myapp-${{ matrix.os }}-${{ matrix.go-version }}
-          path: myapp
+          name: rsreader-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.go-version }}
+          path: rsreader-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.go-version }}
 
   release:
     runs-on: ubuntu-latest
@@ -41,11 +44,46 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Download build artifacts
+      - name: Download build artifacts (Ubuntu amd64)
         uses: actions/download-artifact@v3
         with:
-          name: myapp-${{ matrix.os }}-${{ matrix.go-version }}
-          path: ./artifacts
+          name: rsreader-ubuntu-latest-amd64-1.22
+          path: ./artifacts/ubuntu-latest-amd64-1.22
+      - name: Download build artifacts (Ubuntu arm)
+        uses: actions/download-artifact@v3
+        with:
+          name: rsreader-ubuntu-latest-arm-1.22
+          path: ./artifacts/ubuntu-latest-arm-1.22
+      - name: Download build artifacts (Ubuntu arm64)
+        uses: actions/download-artifact@v3
+        with:
+          name: rsreader-ubuntu-latest-arm64-1.22
+          path: ./artifacts/ubuntu-latest-arm64-1.22
+      - name: Download build artifacts (Windows amd64)
+        uses: actions/download-artifact@v3
+        with:
+          name: rsreader-windows-latest-amd64-1.22
+          path: ./artifacts/windows-latest-amd64-1.22
+      - name: Download build artifacts (Windows arm)
+        uses: actions/download-artifact@v3
+        with:
+          name: rsreader-windows-latest-arm-1.22
+          path: ./artifacts/windows-latest-arm-1.22
+      - name: Download build artifacts (Windows arm64)
+        uses: actions/download-artifact@v3
+        with:
+          name: rsreader-windows-latest-arm64-1.22
+          path: ./artifacts/windows-latest-arm64-1.22
+      - name: Download build artifacts (macOS amd64)
+        uses: actions/download-artifact@v3
+        with:
+          name: rsreader-macos-latest-amd64-1.22
+          path: ./artifacts/macos-latest-amd64-1.22
+      - name: Download build artifacts (macOS arm64)
+        uses: actions/download-artifact@v3
+        with:
+          name: rsreader-macos-latest-arm64-1.22
+          path: ./artifacts/macos-latest-arm64-1.22
 
       - name: Create Release
         id: create_release
@@ -58,12 +96,75 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Release Assets
+      - name: Upload Release Asset (Ubuntu amd64)
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/myapp
-          asset_name: myapp-${{ matrix.os }}-${{ matrix.go-version }}
+          asset_path: ./artifacts/ubuntu-latest-amd64-1.22/rsreader-ubuntu-latest-amd64-1.22
+          asset_name: rsreader-ubuntu-latest-amd64-1.22
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset (Ubuntu arm)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/ubuntu-latest-arm-1.22/rsreader-ubuntu-latest-arm-1.22
+          asset_name: rsreader-ubuntu-latest-arm-1.22
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset (Ubuntu arm64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/ubuntu-latest-arm64-1.22/rsreader-ubuntu-latest-arm64-1.22
+          asset_name: rsreader-ubuntu-latest-arm64-1.22
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset (Windows amd64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/windows-latest-amd64-1.22/rsreader-windows-latest-amd64-1.22
+          asset_name: rsreader-windows-latest-amd64-1.22
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset (Windows arm)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/windows-latest-arm-1.22/rsreader-windows-latest-arm-1.22
+          asset_name: rsreader-windows-latest-arm-1.22
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset (Windows arm64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/windows-latest-arm64-1.22/rsreader-windows-latest-arm64-1.22
+          asset_name: rsreader-windows-latest-arm64-1.22
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset (macOS amd64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/macos-latest-amd64-1.22/rsreader-macos-latest-amd64-1.22
+          asset_name: rsreader-macos-latest-amd64-1.22
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset (macOS arm64)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./artifacts/macos-latest-arm64-1.22/rsreader-macos-latest-arm64-1.22
+          asset_name: rsreader-macos-latest-arm64-1.22
           asset_content_type: application/octet-stream

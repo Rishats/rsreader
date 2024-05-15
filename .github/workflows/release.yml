@@ -41,7 +41,11 @@ jobs:
       - name: Build
         run: |
           echo "Building for GOOS=${GOOS} GOARCH=${GOARCH}"
-          go build -v -o rsreader-${GOOS}-${GOARCH}
+          output_name=rsreader-${GOOS}-${GOARCH}
+          if [ "${GOOS}" == "windows" ]; then
+            output_name=${output_name}.exe
+          fi
+          go build -v -o $output_name
           ls -la
           pwd
 
@@ -49,7 +53,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: rsreader-${{ env.GOOS }}-${{ env.GOARCH }}
-          path: rsreader-${{ env.GOOS }}-${{ env.GOARCH }}
+          path: rsreader-${{ env.GOOS }}-${{ env.GOARCH }}*
 
   release:
     runs-on: ubuntu-latest
@@ -59,127 +63,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Download build artifacts (Linux amd64)
+      - name: Download all build artifacts
         uses: actions/download-artifact@v3
         with:
-          name: rsreader-linux-amd64
-          path: ./artifacts/rsreader-linux-amd64
-      - name: Download build artifacts (Linux arm)
-        uses: actions/download-artifact@v3
-        with:
-          name: rsreader-linux-arm
-          path: ./artifacts/rsreader-linux-arm
-      - name: Download build artifacts (Linux arm64)
-        uses: actions/download-artifact@v3
-        with:
-          name: rsreader-linux-arm64
-          path: ./artifacts/rsreader-linux-arm64
-      - name: Download build artifacts (Windows amd64)
-        uses: actions/download-artifact@v3
-        with:
-          name: rsreader-windows-amd64
-          path: ./artifacts/rsreader-windows-amd64
-      - name: Download build artifacts (Windows arm)
-        uses: actions/download-artifact@v3
-        with:
-          name: rsreader-windows-arm
-          path: ./artifacts/rsreader-windows-arm
-      - name: Download build artifacts (Windows arm64)
-        uses: actions/download-artifact@v3
-        with:
-          name: rsreader-windows-arm64
-          path: ./artifacts/rsreader-windows-arm64
-      - name: Download build artifacts (macOS amd64)
-        uses: actions/download-artifact@v3
-        with:
-          name: rsreader-darwin-amd64
-          path: ./artifacts/rsreader-darwin-amd64
-      - name: Download build artifacts (macOS arm64)
-        uses: actions/download-artifact@v3
-        with:
-          name: rsreader-darwin-arm64
-          path: ./artifacts/rsreader-darwin-arm64
+          name: |
+            rsreader-linux-amd64,
+            rsreader-linux-arm,
+            rsreader-linux-arm64,
+            rsreader-windows-amd64,
+            rsreader-windows-arm,
+            rsreader-windows-arm64,
+            rsreader-darwin-amd64,
+            rsreader-darwin-arm64
+          path: ./artifacts
 
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         with:
           tag_name: ${{ github.ref }}
           release_name: Release ${{ github.ref }}
           draft: false
           prerelease: false
 
-      - name: Upload Release Asset (Linux amd64)
-        uses: actions/upload-release-asset@v1
+      - name: Upload Release Assets
+        run: |
+          for file in ./artifacts/*; do
+            asset_name=$(basename $file)
+            echo "Uploading $asset_name"
+            gh release upload ${{ github.ref }} "$file" --clobber
+          done
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/rsreader-linux-amd64/rsreader-linux-amd64
-          asset_name: rsreader-linux-amd64
-          asset_content_type: application/octet-stream
-      - name: Upload Release Asset (Linux arm)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/rsreader-linux-arm/rsreader-linux-arm
-          asset_name: rsreader-linux-arm
-          asset_content_type: application/octet-stream
-      - name: Upload Release Asset (Linux arm64)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/rsreader-linux-arm64/rsreader-linux-arm64
-          asset_name: rsreader-linux-arm64
-          asset_content_type: application/octet-stream
-      - name: Upload Release Asset (Windows amd64)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/rsreader-windows-amd64/rsreader-windows-amd64
-          asset_name: rsreader-windows-amd64
-          asset_content_type: application/octet-stream
-      - name: Upload Release Asset (Windows arm)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/rsreader-windows-arm/rsreader-windows-arm
-          asset_name: rsreader-windows-arm
-          asset_content_type: application/octet-stream
-      - name: Upload Release Asset (Windows arm64)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/rsreader-windows-arm64/rsreader-windows-arm64
-          asset_name: rsreader-windows-arm64
-          asset_content_type: application/octet-stream
-      - name: Upload Release Asset (macOS amd64)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/rsreader-darwin-amd64/rsreader-darwin-amd64
-          asset_name: rsreader-darwin-amd64
-          asset_content_type: application/octet-stream
-      - name: Upload Release Asset (macOS arm64)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./artifacts/rsreader-darwin-arm64/rsreader-darwin-arm64
-          asset_name: rsreader-darwin-arm64
-          asset_content_type: application/octet-stream
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}

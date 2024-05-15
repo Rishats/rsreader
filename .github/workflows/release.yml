@@ -11,9 +11,12 @@ jobs:
 
     strategy:
       matrix:
-        go-version: [1.22]  # Define the Go versions you want to test against
-        os: [ubuntu-latest, windows-latest, macos-latest]  # Define the OS you want to build for
-        arch: [amd64, arm, arm64]  # Define the architectures you want to build for
+        go-version: [1.22]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        arch: [amd64, arm, arm64]
+        exclude:
+          - os: macos-latest
+            arch: arm  # Exclude unsupported darwin/arm combination
 
     steps:
       - name: Checkout code
@@ -31,12 +34,13 @@ jobs:
         run: |
           echo "Building for GOOS=${GOOS} GOARCH=${GOARCH}"
           go build -v -o rsreader-${GOOS}-${GOARCH}-${{ matrix.go-version }}
+          ls -la
 
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: rsreader-${{ matrix.os }}-${{ matrix.arch }}-${{ matrix.go-version }}
-          path: rsreader-${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'darwin' || 'linux' }}-${{ matrix.arch }}-${{ matrix.go-version }}
+          path: rsreader-${GOOS}-${GOARCH}-${{ matrix.go-version }}
 
   release:
     runs-on: ubuntu-latest

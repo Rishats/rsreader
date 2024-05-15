@@ -37,6 +37,9 @@ jobs:
           ls -la
 
       - name: Archive build artifacts
+        env:
+          GOOS: ${{ matrix.os == 'windows-latest' && 'windows' || matrix.os == 'macos-latest' && 'darwin' || 'linux' }}
+          GOARCH: ${{ matrix.arch }}
         uses: actions/upload-artifact@v3
         with:
           name: rsreader-${GOOS}-${GOARCH}-${{ matrix.go-version }}

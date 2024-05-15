@@ -48,8 +48,8 @@ jobs:
       - name: Archive build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: rsreader-${GOOS}-${GOARCH}
-          path: rsreader-${GOOS}-${GOARCH}
+          name: rsreader-${{ env.GOOS }}-${{ env.GOARCH }}
+          path: rsreader-${{ env.GOOS }}-${{ env.GOARCH }}
 
   release:
     runs-on: ubuntu-latest
